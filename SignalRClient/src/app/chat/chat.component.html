@@ -1,10 +1,15 @@
-<form>
+<form (ngSubmit)="onSubmit()">
   <mat-form-field appearance="fill">
     <mat-label>User</mat-label>
-    <input matInput>
+    <input matInput [(ngModel)]="user" name="user">
   </mat-form-field>
   <mat-form-field appearance="fill">
     <mat-label>Message</mat-label>
-    <input matInput>
+    <input matInput [(ngModel)]="message" name="message">
   </mat-form-field>
+  <button mat-raised-button>Send</button>
 </form>
+
+<mat-list role="list">
+  <mat-list-item *ngFor="let message of messages" role="listitem">{{message}}</mat-list-item>
+</mat-list>

@@ -1,5 +1,9 @@
+using Microsoft.AspNetCore.Authentication.Negotiate;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http.Connections;
+using Microsoft.AspNetCore.Server.HttpSys;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -19,16 +23,20 @@ namespace SignalR.Backend
 		// This method gets called by the runtime. Use this method to add services to the container.
 		public void ConfigureServices(IServiceCollection services)
 		{
-			services.AddSignalR();
 			services.AddCors(options =>
 			{
-				options.AddPolicy("CorsPolicy", builder => builder
-					.WithOrigins("http://localhost:4200")
-					.AllowAnyMethod()
-					.AllowAnyHeader()
-					.AllowCredentials()
-				);
+				options.AddPolicy(name: "CorsPolicy",
+					builder =>
+					{
+						builder.WithOrigins("http://localhost:4200")
+							.AllowAnyHeader()
+							.WithMethods("GET", "POST")
+							.AllowCredentials();
+					});
 			});
+			services.AddAuthentication(HttpSysDefaults.AuthenticationScheme);
+			services.AddSingleton<IUserIdProvider, NameUserIdProvider>();
+			services.AddSignalR();
 		}
 
 		// This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -40,12 +48,14 @@ namespace SignalR.Backend
 			}
 
 			app.UseHttpsRedirection();
+			app.UseStaticFiles();
+
+			app.UseCors("CorsPolicy");
 
 			app.UseRouting();
 
+			app.UseAuthentication();
 			app.UseAuthorization();
-
-			app.UseCors("CorsPolicy");
 
 			app.UseEndpoints(endpoints =>
 			{
