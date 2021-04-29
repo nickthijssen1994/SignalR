@@ -11,7 +11,7 @@ import * as signalR from '@microsoft/signalr';
 })
 export class ChatComponent implements OnInit {
 
-  private message: Subject<any>;
+  private messageSubject: Subject<any>;
   private hubConnection: HubConnection;
   private socketSubscription: Subscription;
   private serverAddress: string;
@@ -21,7 +21,7 @@ export class ChatComponent implements OnInit {
   ngOnInit(): void {
 
     this.serverAddress = environment.apiURL + 'chat';
-    this.message = new Subject<any>();
+    this.messageSubject = new Subject<any>();
     this.hubConnection = new signalR.HubConnectionBuilder()
       .withUrl(this.serverAddress).withAutomaticReconnect()
       .build();
@@ -43,7 +43,7 @@ export class ChatComponent implements OnInit {
   }
 
   getOutput(): Observable<any[]> {
-    return this.message.asObservable();
+    return this.messageSubject.asObservable();
   }
 
   sendInputToServer(input: any) {
@@ -53,7 +53,7 @@ export class ChatComponent implements OnInit {
 
   private addServerListener = (outputMessageName: string) => {
     this.hubConnection.on(outputMessageName, (data) => {
-      this.message.next(data);
+      this.messageSubject.next(data);
     });
   }
 
